@@ -2,7 +2,7 @@ import streamlit as st
 
 def inject_custom_css():
     """
-    Enhanced custom CSS for a more appealing music platform interface.
+    Enhanced custom CSS for a visually appealing music platform interface with centralized elements.
     """
     st.markdown(
         """
@@ -11,8 +11,12 @@ def inject_custom_css():
             background: linear-gradient(135deg, #000000 0%, #191414 50%, #0F0F0F 100%);
             color: #FFFFFF;
         }
-        
-        /* Centered title styling with modern typography */
+        .block-container {
+            max-width: 1200px;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            margin: 0 auto;
+        }
         .sargam-title {
             text-align: center;
             font-size: 4rem;
@@ -24,80 +28,18 @@ def inject_custom_css():
             -webkit-text-fill-color: transparent;
             letter-spacing: -1px;
         }
-        
         .sargam-subtitle {
             text-align: center;
             margin-bottom: 2.5rem;
             font-size: 1.2rem;
             color: #CCCCCC;
         }
-        
-        /* Row container for the login cards */
-        .login-row {
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            align-items: center;
-            gap: 3rem;
-            margin-bottom: 3rem;
-        }
-        
-        /* Individual login card */
-        .login-card {
-            background-color: #222222;
-            border-radius: 12px;
-            padding: 2.5rem;
+        .tips-box {
+            background-color: #282828;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
             text-align: center;
-            width: 280px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s, box-shadow 0.3s;
-            cursor: pointer;
-        }
-        
-        .login-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
-        }
-        
-        .login-card img {
-            max-width: 100px;
-            margin-bottom: 1.5rem;
-            transition: transform 0.3s;
-        }
-        
-        .login-card:hover img {
-            transform: scale(1.1);
-        }
-        
-        .login-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            font-weight: 600;
-        }
-        
-        .login-button {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 50px;
-            font-weight: 600;
-            transition: background 0.3s, transform 0.2s;
-            width: 80%;
-            margin: 0 auto;
-            cursor: pointer;
-        }
-        
-        .spotify-button:hover {
-            background: #1DB954;
-        }
-        
-        .youtube-button:hover {
-            background: #FF0000;
-        }
-        
-        stButton > button {
-            display: none;
         }
         </style>
         """,
@@ -111,36 +53,15 @@ def display_login_cards():
     st.markdown("<h1 class='sargam-title'>Sargam AI</h1>", unsafe_allow_html=True)
     st.markdown("<p class='sargam-subtitle'>Your personalized music experience awaits</p>", unsafe_allow_html=True)
     
-    # Create a container to hold both cards side by side
+    # Create two columns for the login cards
     col1, col2 = st.columns(2)
-    
-    # Spotify card
     with col1:
-        spotify_html = """
-        <div class="login-card">
-            <img src="https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_Green.png" alt="Spotify Logo">
-            <h3>Spotify</h3>
-            <div class="login-button spotify-button" onclick="document.getElementById('login_spotify_btn').click()">
-                Login to Spotify
-            </div>
-        </div>
-        """
-        st.markdown(spotify_html, unsafe_allow_html=True)
+        st.image("https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_Green.png", width=100)
         if st.button("Login to Spotify", key="login_spotify_btn"):
             st.session_state.login_platform = "spotify"
-    
-    # YouTube Music card with updated logo
     with col2:
-        youtube_html = """
-        <div class="login-card">
-            <img src="https://music.youtube.com/img/on_platform_logo_dark.svg" alt="YouTube Music Logo">
-            <h3>YouTube Music</h3>
-            <div class="login-button youtube-button" onclick="document.getElementById('login_ytmusic_btn').click()">
-                Login to YouTube Music
-            </div>
-        </div>
-        """
-        st.markdown(youtube_html, unsafe_allow_html=True)
+        # Use an alternative YouTube Music logo URL for better reliability
+        st.image("https://upload.wikimedia.org/wikipedia/commons/4/4e/YouTube_Music_Logo.png", width=100)
         if st.button("Login to YouTube Music", key="login_ytmusic_btn"):
             st.session_state.login_platform = "ytmusic"
 
@@ -148,9 +69,12 @@ def display_interface():
     """
     Main interface for generating a playlist after user is authenticated.
     """
-    st.title("Sargam AI Playlist Generator")
-    col1, col2 = st.columns([2, 1])
-    with col1:
+    st.markdown("<h1 class='sargam-title'>Sargam AI</h1>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; color: #CCCCCC; margin-bottom: 2rem;'>Playlist Generator</h2>", unsafe_allow_html=True)
+    
+    # Center the input fields
+    col1, col2, col3 = st.columns([1, 3, 1])
+    with col2:
         playlist_name = st.text_input(
             "🎵 Playlist Name",
             placeholder="My Awesome Playlist",
@@ -160,31 +84,52 @@ def display_interface():
             "🎧 Describe Your Perfect Playlist",
             placeholder="e.g. I'm in a mellow mood and love acoustic singer-songwriters from the 90s...",
             help="Be specific about the mood, genres, and artists you like",
-            height=100
+            height=120
         )
+    
+    st.markdown(
+        """
+        <div class="tips-box">
+            <h3>💡 Tips for Better Results</h3>
+            <p>
+            🎸 <strong>Include specific genres</strong> &nbsp;•&nbsp; 
+            🎤 <strong>List favorite artists</strong> &nbsp;•&nbsp; 
+            🌟 <strong>Mention the mood or vibe</strong> &nbsp;•&nbsp; 
+            📅 <strong>Specify an era</strong> &nbsp;•&nbsp; 
+            🎯 <strong>Indicate the occasion</strong>
+            </p>
+            <p style="margin-top: 1rem;">
+            <strong>🚀 Pro Tip:</strong> The more specific your description, the better the results!
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    # Create a container for the action buttons using native Streamlit buttons
+    col1, col2, col3 = st.columns([1, 3, 1])
     with col2:
-        st.markdown("""
-        ### 💡 Tips for Better Results
-        - 🎸 Include specific genres
-        - 🎤 List favorite artists
-        - 🌟 Mention the mood or vibe
-        - 📅 Specify an era or time period
-        - 🎯 Indicate the occasion (workout, relaxation, party)
-        """)
-    st.markdown("""
-    <div style='background-color: #282828; padding: 1rem; border-radius: 8px; margin: 1rem 0;'>
-        <strong>🚀 Pro Tips:</strong><br>
-        The more specific your description, the better the results! Try including:
-        - Multiple artist references
-        - Specific moods or emotions
-        - Context for when you'll listen
-        - Tempo preferences
-        - Language or cultural elements
-    </div>
-    """, unsafe_allow_html=True)
-    return playlist_name, user_prompt
+        generate_clicked = st.button("🎵 Generate Playlist", key="generate_btn")
+        preview_clicked = st.button("👀 Preview Playlist", key="preview_btn")
+        save_clicked = st.button("💾 Save to Playlist", key="save_btn")
+    
+    return playlist_name, user_prompt, generate_clicked, preview_clicked, save_clicked
 
-# To use these functions:
-# 1. Call inject_custom_css() once at the start of your app
-# 2. Call display_login_cards() to show the login interface
-# 3. After login, call display_interface() to show the playlist generator
+def display_playlist_preview(playlist_details):
+    """
+    Displays a visually appealing preview of the generated playlist.
+    """
+    st.markdown("<h2 style='text-align: center; margin-top: 2rem;'>🎵 Generated Playlist Preview</h2>", unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 3, 1])
+    with col2:
+        for idx, song in enumerate(playlist_details, start=1):
+            st.markdown(
+                f"""
+                <div style="background:#333333; padding:1rem; border-radius:8px; margin-bottom:0.75rem; text-align:center;">
+                    <strong>{idx}. {song.get('name', 'Unknown Song')}</strong><br>
+                    <em>by {song.get('artist', 'Unknown Artist')}</em>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
