@@ -1,0 +1,10 @@
+streamlit
+spotipy
+requests
+python-dotenv
+agno
+googlesearch-python
+google-genai
+ytmusicapi
+google-auth
+google-auth-oauthlib
