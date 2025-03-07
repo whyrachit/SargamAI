@@ -9,11 +9,11 @@ logger = logging.getLogger(__name__)
 try:
     import streamlit as st
     # Spotify credentials
-    SPOTIFY_CLIENT_ID = st.secrets["client_id"]
-    SPOTIFY_CLIENT_SECRET = st.secrets["client_secret"]
-    SPOTIFY_REDIRECT_URI = st.secrets["redirect_uri"]
+    SPOTIFY_CLIENT_ID = st.secrets["spotify_client_id"]
+    SPOTIFY_CLIENT_SECRET = st.secrets["spotify_client_secret"]
+    SPOTIFY_REDIRECT_URI = st.secrets["spotify_redirect_uri"]
     # Gemini API key
-    GEMINI_API_KEY = st.secrets["api_key"]
+    GEMINI_API_KEY = st.secrets["gemini_api_key"]
     # YouTube Music credentials
     YTMUSIC_CLIENT_ID = st.secrets["ytmusic_client_id"]
     YTMUSIC_CLIENT_SECRET = st.secrets["ytmusic_client_secret"]
