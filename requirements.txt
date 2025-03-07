@@ -8,3 +8,5 @@ google-genai
 ytmusicapi
 google-auth
 google-auth-oauthlib
+openai
+pycountry

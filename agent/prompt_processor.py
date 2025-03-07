@@ -94,4 +94,3 @@ def process_prompt(user_prompt: str):
     except Exception as e:
         logger.error(f"Error in prompt processing: {e}")
         return []
-
