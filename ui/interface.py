@@ -171,7 +171,6 @@ def display_playlist_preview(songs):
                     <div class="compact-song-title">{song.get('name', 'Unknown Song')}</div>
                     <div class="compact-song-artist">{song.get('artist', 'Unknown Artist')}</div>
                 </div>
-                <div class="song-duration">{song.get('duration', '3:30')}</div>
                 <button class="play-button">
                     <svg width="24" height="24" viewBox="0 0 24 24">
                         <path fill="currentColor" d="M8 5v14l11-7z"/>
