@@ -1,8 +1,23 @@
 import re
 import time
 import concurrent.futures
+import requests
+from spotipy import Spotify
 from spotipy.exceptions import SpotifyException
 import difflib  # For fuzzy matching
+
+# Create a custom session with a larger connection pool
+session = requests.Session()
+adapter = requests.adapters.HTTPAdapter(pool_connections=50, pool_maxsize=50)  # Increase pool size
+session.mount("https://", adapter)
+
+def create_spotify_client(token_info):
+    """
+    Creates a Spotify client using the provided token_info.
+    """
+    if not token_info or "access_token" not in token_info:
+        raise ValueError("Invalid token_info. Please authenticate again.")
+    return Spotify(auth=token_info["access_token"], requests_session=session)
 
 def create_spotify_playlist(sp, playlist_name: str, description: str):
     """
@@ -92,7 +107,7 @@ def add_tracks_to_playlist(sp, playlist_id: str, song_recommendations: list):
             songs_to_search.append(song)
     
     if songs_to_search:
-        with concurrent.futures.ThreadPoolExecutor() as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:  # Limit to 10 threads
             future_to_song = {executor.submit(find_track_uri, song, sp): song for song in songs_to_search}
             for future in concurrent.futures.as_completed(future_to_song):
                 track_uri = future.result()

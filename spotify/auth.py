@@ -1,4 +1,5 @@
 import uuid
+import os 
 import streamlit as st
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
@@ -30,8 +31,13 @@ def show_login_button():
 def spotify_authenticate():
     scope = "playlist-modify-private playlist-modify-public user-read-private user-read-email"
     
+    # Ensure the .spotifycache directory exists
+    cache_dir = os.path.join(os.getcwd(), ".spotifycache")
+    os.makedirs(cache_dir, exist_ok=True)
+
     if 'spotify_cache_path' not in st.session_state:
-        st.session_state.spotify_cache_path = f".spotifycache-{uuid.uuid4()}"
+        # Store cache files in the .spotifycache directory
+        st.session_state.spotify_cache_path = os.path.join(cache_dir, f".spotifycache-{uuid.uuid4()}")
 
     if 'sp_oauth' not in st.session_state:
         st.session_state.sp_oauth = SpotifyOAuth(
@@ -50,7 +56,7 @@ def spotify_authenticate():
             sp.current_user()  # Test authentication
         except Exception:
             st.session_state.pop('token_info', None)
-            st.rerun()  # Updated here
+            st.rerun()
 
     query_params = st.query_params
     code = query_params.get("code")
@@ -60,7 +66,7 @@ def spotify_authenticate():
             token_info = st.session_state.sp_oauth.get_access_token(code)
             st.session_state.token_info = token_info
             st.session_state.code_processed = True
-            st.rerun()  # Updated here
+            st.rerun()
         except Exception as e:
             st.error(f"Authentication failed: {str(e)}")
             st.session_state.pop("token_info", None)

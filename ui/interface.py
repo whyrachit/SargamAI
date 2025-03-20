@@ -90,7 +90,7 @@ def display_interface():
     st.markdown("""
     <div class="logo-container">
         <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg" width="40">
-        <h1 style="color: #1DB954; margin: 0;">SargamAI</h1>
+        <h1 style="color: #fffff; margin: 0;">SargamAI</h1>
     </div>
     """, unsafe_allow_html=True)
     

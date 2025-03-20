@@ -1,7 +1,7 @@
 import json
 import re
-import base64
 from agno.agent import Agent
+from agno.tools.website import WebsiteTools
 from agno.models.google import Gemini
 from agno.tools.googlesearch import GoogleSearchTools
 from config import GEMINI_API_KEY
@@ -40,6 +40,8 @@ def process_prompt(user_prompt: str, uploaded_images=None):
 
     Before recommending any songs, initiate a query using:
     CALL GOOGLE SEARCH TOOL NOW: followed by your specific query 
+    also you may scrape the data from the search results to generate recommendations 
+    as well if the search results are not sufficient enough.
     (e.g., new releases, trending hits, or artist updates).
 
     Data Analysis & Verification:
@@ -93,15 +95,17 @@ def process_prompt(user_prompt: str, uploaded_images=None):
             fixed_language="en",
             timeout=10
         )
+
+        scrape_tool=WebsiteTools()
         
         # Create the agent with the search tool
         agent = Agent(
             model=Gemini(
                 api_key=GEMINI_API_KEY,
                 id="gemini-2.0-flash-exp",
-                temperature=0.1
+                temperature=0.9
             ),
-            tools=[search_tool],
+            tools=[search_tool,scrape_tool],
             description=description,
             markdown=True,
         )
