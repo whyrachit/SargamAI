@@ -26,144 +26,111 @@ def extract_json(raw_text: str) -> str:
 def process_prompt(user_prompt: str, uploaded_images=None):
     """
     Processes the user prompt to generate a playlist recommendation.
-    Now supports image analysis for playlist inspiration.
+    Now deeply analyzes prompt-specific themes and uses search to support those themes.
     
     Args:
         user_prompt: The text prompt from the user
         uploaded_images: Optional list of uploaded image files
     """
-    # Base instructions that force a live search call:
+    
+    # Improved base instruction for better focus
     base_instruction = """
-    You are an expert music recommendation specialist with real-time web access. Your goal is to provide up-to-date and accurate song recommendations based solely on current web data. Follow these steps:
+    You are an expert music recommendation specialist with access to real-time web search.
+    Your goal is to create a personalized, theme-driven playlist using both the user's input
+    and real-time verified information from the internet.
 
-    Real-Time Search:
+    Never default to generic "trending" songs unless they match the specific mood or theme.
+    Focus on extracting the user's **intent** from the prompt and image context — such as mood, genre, emotion, language, time period, and setting.
 
-    Before recommending any songs, initiate a query using:
-    CALL GOOGLE SEARCH TOOL NOW: followed by your specific query 
-    also you may scrape the data from the search results to generate recommendations 
-    as well if the search results are not sufficient enough.
-    (e.g., new releases, trending hits, or artist updates).
-
-    Data Analysis & Verification:
-
-    Analyze the search results and extract key details such as release dates, artist names, genres, 
-    chart positions, and relevant news.
-    Immediately cite credible sources after each fact.
-
-    Language Detection & Playlist Generation:
-
-    Detect the language from the user's input text.
-    If the user hasn’t explicitly mentioned a specific genre or language, 
-    generate playlists based on the detected language.
-    Recommendation Generation:
-
-    Provide detailed recommendations that include the song title, artist, 
-    release date, genre, and any additional interesting context in a clear, structured format.
-    Fallback Guidelines:
-
-    If no relevant data is found, state your uncertainty and note that 
-    recommendations might not reflect the most recent information.
-
+    Use Google Search as a SUPPORT tool to fetch real-time information about songs, only after extracting themes.
+    Search for songs that match the extracted mood and context, NOT just recent songs.
     """
-    
-    # Additional concise instructions:
+
     song_instructions = """
-    Instructions:
-    - Generate a curated playlist of exactly 20-25 songs.
-    - For each song, output an object with exactly two keys: "name" (song title) and "artist" (primary artist).
-    - Do not include any extra commentary.
+    Final Output Instructions:
+    - Curate a playlist of exactly 20–25 songs.
+    - Each song must be represented by a JSON object with two keys only: "name" and "artist".
+    - Do not include extra commentary, notes, or explanations — only output the JSON array.
     """
-    
-    # Image instructions if images are provided
+
     image_instructions = """
-    - When images are provided, first analyze each image.
-    - Use Google Search to find more information about what's in the images.
-    - Consider the mood, style, colors, objects, and themes in the images when curating songs.
-    - Include songs that match the aesthetic or emotional quality of the images.
+    If images are provided:
+    - First, analyze each image for key themes, emotional tone, objects, style, colors, or setting.
+    - Then combine insights from the images with the user's text to extract a unified aesthetic or vibe.
+    - Use that to guide song selection.
     """
-    
-    # Combine instructions based on whether images are provided
+
+    # Merge instructions
     if uploaded_images and len(uploaded_images) > 0:
         description = base_instruction + "\n" + image_instructions + "\n" + song_instructions
     else:
         description = base_instruction + "\n" + song_instructions
-    
+
     try:
-        # Create the GoogleSearchTools instance with specific parameters
         search_tool = GoogleSearchTools(
             fixed_max_results=10,
             fixed_language="en",
             timeout=10
         )
 
-        scrape_tool=WebsiteTools()
-        
-        # Create the agent with the search tool
+        scrape_tool = WebsiteTools()
+
         agent = Agent(
             model=Gemini(
                 api_key=GEMINI_API_KEY,
                 id="gemini-2.0-flash-exp",
                 temperature=0.9
             ),
-            tools=[search_tool,scrape_tool],
+            tools=[search_tool, scrape_tool],
             description=description,
             markdown=True,
         )
-        
-        # Build the enhanced prompt based on whether images are provided
+
         if uploaded_images and len(uploaded_images) > 0:
-            # Process images for Gemini - using the correct format
-            # Instead of manually encoding, we'll pass the raw image data
-            images = []
-            for img in uploaded_images:
-                # The agno library expects an image object with 'content' field
-                # containing the raw bytes of the image
-                images.append({
-                    'content': img.getvalue(),  # This passes the raw bytes directly
-                    'mime_type': img.type
-                })
-            
-            # Add image analysis and search instructions to the prompt
+            images = [{
+                'content': img.getvalue(),
+                'mime_type': img.type
+            } for img in uploaded_images]
+
             enhanced_prompt = f"""
-            Given the user request: "{user_prompt}" and {len(images)} uploaded images:
-            
-            FIRST: Analyze the provided images and identify key themes, colors, moods, and objects.
-            
-            SECOND: CALL GOOGLE SEARCH TOOL NOW: Search for information about what's in these images.
-            
-            THIRD: CALL GOOGLE SEARCH TOOL NOW: Search for current song details relevant to both the user query and the image themes.
-            
-            FINALLY: Based on the search results and image analysis, generate a curated playlist of exactly 20-25 songs.
-            Each song must be output as an object with keys "name" and "artist".
-            Ensure songs match both the text prompt and visual aesthetic of the images.
-            Do not include any additional text.
+            The user said: "{user_prompt}" and uploaded {len(images)} images.
+
+            STEP 1: Analyze the uploaded images for themes, colors, moods, objects, or cultural markers.
+            STEP 2: Extract dominant moods/emotions/themes from both the images and user text.
+            STEP 3: CALL GOOGLE SEARCH TOOL NOW: Find real-time songs that reflect these extracted themes.
+            STEP 4: From results, filter songs based on relevance to mood or aesthetic.
+            STEP 5: Generate a list of exactly 20–25 songs, each with "name" and "artist" only.
+            DO NOT provide commentary or extra formatting — just output the final JSON.
             """
-            
-            # Run the agent with text and images
+
             response = agent.run(enhanced_prompt, images=images)
+
         else:
-            # Original text-only prompt
             enhanced_prompt = f"""
-            Given the user request: "{user_prompt}"
-            FIRST: CALL GOOGLE SEARCH TOOL NOW: Search for current song details relevant to this query.
-            THEN: Based solely on the live search results, generate a curated playlist of exactly 20-25 songs.
-            Each song must be output as an object with keys "name" and "artist".
-            Do not include any additional text.
+            The user said: "{user_prompt}"
+
+            STEP 1: Analyze the user prompt to identify mood, emotion, theme, genre, language, cultural context, time period, or use case (e.g., party, study, heartbreak, road trip).
+            STEP 2: CALL GOOGLE SEARCH TOOL NOW: Search for songs that align with these extracted concepts, not just "current" hits.
+            STEP 3: Parse the results and select songs that fit thematically.
+            STEP 4: Output exactly 20–25 songs, in this JSON format:
+            [{{"name": "song title", "artist": "artist name"}}, ...]
+            Do not include any other commentary or text.
             """
-            
-            # Run with text only
+
             response = agent.run(enhanced_prompt)
-        
+
         json_text = extract_json(response.content)
+
         try:
             recommendations = json.loads(json_text)
             if len(recommendations) < 15:
                 logger.warning(f"Generated only {len(recommendations)} recommendations. Expected at least 15.")
-            logger.info(f"Generated {len(recommendations)} song recommendations")
+            logger.info(f"Generated {len(recommendations)} song recommendations.")
             return recommendations
         except json.JSONDecodeError as e:
             logger.error(f"JSON decode error: {e}\nResponse Content: {json_text}")
             return []
+
     except Exception as e:
         logger.error(f"Error in prompt processing: {e}")
         return []
